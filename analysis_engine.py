@@ -229,10 +229,11 @@ class RetailAnalyzer:
         return pd.DataFrame(recommendations)
     def get_slow_moving(self):
         """Identify products with consistently low sales velocity."""
+
         sales = self.sales.copy()
 
         product_sales = (
-            sales.groupby(["product_id", "product_name"])["units_sold"]
+            sales.groupby("product_id")["units_sold"]
             .sum()
             .reset_index()
         )
@@ -242,15 +243,29 @@ class RetailAnalyzer:
         )
 
         slow = product_sales[
-            product_sales["daily_avg_sales"] <= 1.0
+            product_sales["daily_avg_sales"] <= 2.5
         ].copy()
+
+        slow = slow.merge(
+            self.products[["product_id", "product_name", "category"]],
+            on="product_id",
+            how="left"
+        )
 
         slow["status"] = "Slow Moving"
 
-        return slow.sort_values(
+        return slow[
+            [
+                "product_id",
+                "product_name",
+                "category",
+                "units_sold",
+                "daily_avg_sales",
+                "status"
+            ]
+        ].sort_values(
             "daily_avg_sales"
         ).reset_index(drop=True)
-
     def get_attention_items(self):
         trends = self.get_sales_trends()
 
