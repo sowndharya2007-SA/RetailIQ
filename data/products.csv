@@ -1,0 +1,21 @@
+product_id,product_name,category,unit_price,cost_price,reorder_level,target_stock
+P001,Wireless Mouse,Electronics,799,450,20,80
+P002,Mechanical Keyboard,Electronics,2499,1600,15,60
+P003,USB-C Fast Charger,Electronics,1299,750,25,100
+P004,Bluetooth Headphones,Electronics,2999,1900,15,60
+P005,Smart Watch,Electronics,4999,3200,10,40
+P006,Laptop Stand,Accessories,1499,900,15,50
+P007,USB-C Cable,Accessories,499,220,30,120
+P008,Phone Case,Accessories,399,150,40,160
+P009,Power Bank 10000mAh,Electronics,1599,950,20,80
+P010,Webcam HD,Electronics,2299,1400,12,50
+P011,Notebook A5,Stationery,199,90,40,150
+P012,Gel Pen Pack,Stationery,149,60,50,200
+P013,Desk Organizer,Stationery,599,300,20,80
+P014,Backpack,Travel,1799,1000,15,60
+P015,Water Bottle,Travel,699,350,20,80
+P016,LED Desk Lamp,Home Office,1299,700,15,60
+P017,Office Chair Cushion,Home Office,999,550,15,50
+P018,External SSD 500GB,Electronics,5499,3800,8,30
+P019,Wireless Earbuds,Electronics,3499,2200,12,50
+P020,HDMI Cable,Accessories,699,300,25,100
