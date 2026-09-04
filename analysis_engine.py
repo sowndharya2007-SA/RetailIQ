@@ -121,6 +121,112 @@ class RetailAnalyzer:
             "change_percent",
             ascending=False
         )
+    def get_stockout_risk(self):
+        latest_date = self.sales["date"].max()
+        recent_start = latest_date - pd.Timedelta(days=6)
+
+        recent_sales = self.sales[
+            self.sales["date"] >= recent_start
+        ].groupby(
+            ["store_id", "product_id"]
+        )["units_sold"].sum().reset_index()
+
+        recent_sales["daily_avg_sales"] = (
+            recent_sales["units_sold"] / 7
+        )
+
+        data = self.inventory.merge(
+            self.products,
+            on="product_id",
+            how="left"
+        )
+
+        data = data.merge(
+            recent_sales[
+                ["store_id", "product_id", "daily_avg_sales"]
+            ],
+            on=["store_id", "product_id"],
+            how="left"
+        )
+
+        data["daily_avg_sales"] = data["daily_avg_sales"].fillna(0)
+
+        data["days_of_stock"] = data.apply(
+            lambda row:
+                row["current_stock"] / row["daily_avg_sales"]
+                if row["daily_avg_sales"] > 0
+                else 999,
+            axis=1
+        )
+
+        data["risk_level"] = "Low"
+
+        data.loc[
+            data["days_of_stock"] <= 7,
+            "risk_level"
+        ] = "Medium"
+
+        data.loc[
+            data["days_of_stock"] <= 4,
+            "risk_level"
+        ] = "High"
+
+        data.loc[
+            data["days_of_stock"] <= 2,
+            "risk_level"
+        ] = "Critical"
+
+        data["recommended_reorder"] = (
+            data["target_stock"] - data["current_stock"]
+        ).clip(lower=0)
+
+        return data[
+            data["risk_level"] != "Low"
+        ][
+            [
+                "store_name",
+                "product_name",
+                "current_stock",
+                "daily_avg_sales",
+                "days_of_stock",
+                "risk_level",
+                "recommended_reorder"
+            ]
+        ].sort_values(
+            "days_of_stock"
+        )
+    def get_recommendations(self):
+        risk = self.get_stockout_risk()
+
+        recommendations = []
+
+        for _, row in risk.iterrows():
+
+            if row["risk_level"] == "Critical":
+                action = "Urgently reorder"
+                priority = "Critical"
+
+            elif row["risk_level"] == "High":
+                action = "Reorder soon"
+                priority = "High"
+
+            else:
+                action = "Monitor inventory"
+                priority = "Medium"
+
+            recommendations.append({
+                "store": row["store_name"],
+                "product": row["product_name"],
+                "current_stock": int(row["current_stock"]),
+                "daily_demand": round(row["daily_avg_sales"], 2),
+                "days_remaining": round(row["days_of_stock"], 1),
+                "risk": row["risk_level"],
+                "recommended_order": int(row["recommended_reorder"]),
+                "priority": priority,
+                "action": action
+            })
+
+        return pd.DataFrame(recommendations)
 
     def get_attention_items(self):
         trends = self.get_sales_trends()
@@ -156,3 +262,7 @@ if __name__ == "__main__":
 
     print("\nATTENTION ITEMS")
     print(analyzer.get_attention_items().to_string(index=False))
+    print("\nSTOCK-OUT RISK")
+    print(analyzer.get_stockout_risk().to_string(index=False))
+    print("\nRECOMMENDATIONS")
+    print(analyzer.get_recommendations().to_string(index=False))
