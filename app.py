@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 import json
 import pandas as pd
 
@@ -134,6 +134,9 @@ def build_evidence(question):
 
     # The dataset cannot answer unrelated questions.
     return None
+@app.route("/")
+def home():
+    return render_template("index.html")
 
 @app.route("/api/health")
 def health():

@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <title>RetailIQ | Sales & Inventory Copilot</title>
+</head>
+
+<body>
+
+<header>
+    <h1>RetailIQ</h1>
+    <p>AI Sales & Inventory Copilot</p>
+</header>
+
+<main class="container">
+
+    <!-- KPI CARDS -->
+    <section class="card-grid">
+
+        <div class="card">
+            <h3>Total Products</h3>
+            <div class="number" id="total-products">-</div>
+            <p>Across all stores</p>
+        </div>
+
+        <div class="card">
+            <h3>Low Stock Items</h3>
+            <div class="number" id="low-stock">-</div>
+            <p>Below reorder level</p>
+        </div>
+
+        <div class="card">
+            <h3>Stockout Risks</h3>
+            <div class="number" id="stockout-risk">-</div>
+            <p>Likely to run out</p>
+        </div>
+
+        <div class="card">
+            <h3>Overstocked Items</h3>
+            <div class="number" id="overstock">-</div>
+            <p>Above target stock</p>
+        </div>
+
+    </section>
+
+
+    <!-- ATTENTION -->
+    <section class="section">
+
+        <div class="card">
+
+            <h2>⚠️ Attention Required</h2>
+
+            <div id="attention">
+                Loading alerts...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- AI COPILOT -->
+    <section class="section">
+
+        <div class="card">
+
+            <h2>🤖 Ask RetailIQ</h2>
+
+            <p>
+                Ask questions about sales, inventory, stockouts and
+                recommendations.
+            </p>
+
+            <div class="ask-box">
+
+                <input
+                    id="question"
+                    type="text"
+                    placeholder="Example: Which products are likely to run out?"
+                >
+
+                <button onclick="askRetailIQ()">
+                    Ask AI
+                </button>
+
+            </div>
+
+            <div id="answer">
+                Ask a question to get an evidence-based answer.
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- TOP SALES -->
+    <section class="section">
+
+        <div class="card">
+
+            <h2>📈 Sales Performance</h2>
+
+            <div id="sales">
+                Loading sales data...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- STOCKOUT TABLE -->
+    <section class="section">
+
+        <div class="card">
+
+            <h2>🚨 Stockout Risk</h2>
+
+            <div id="stockout-table">
+                Loading stockout risks...
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<script>
+
+let dashboardData = null;
+
+
+/* -----------------------------
+   Load Dashboard
+----------------------------- */
+
+async function loadDashboard() {
+
+    try {
+
+        const response = await fetch("/api/dashboard");
+
+        const result = await response.json();
+
+        if (result.status !== "success") {
+            throw new Error("Dashboard data unavailable");
+        }
+
+        dashboardData = result.data;
+
+        renderDashboard();
+
+    } catch (error) {
+
+        document.getElementById("attention").innerHTML =
+            "<p>Unable to load dashboard data.</p>";
+
+        console.error(error);
+    }
+}
+
+
+/* -----------------------------
+   Render Dashboard
+----------------------------- */
+
+function renderDashboard() {
+
+    const data = dashboardData;
+
+    const inventory = data.inventory || [];
+    const lowStock = data.low_stock || [];
+    const overstock = data.overstock || [];
+    const stockout = data.stockout_risk || [];
+    const attention = data.attention_items || [];
+    const sales = data.sales_summary || [];
+
+
+    /* KPI */
+
+    const productIds = new Set(
+        inventory.map(item => item.product_id)
+    );
+
+    document.getElementById("total-products").innerText =
+        productIds.size;
+
+    document.getElementById("low-stock").innerText =
+        lowStock.length;
+
+    document.getElementById("stockout-risk").innerText =
+        stockout.filter(
+            item => item.risk_level === "High" ||
+                    item.risk_level === "Critical"
+        ).length;
+
+    document.getElementById("overstock").innerText =
+        overstock.length;
+
+
+    /* Attention */
+
+    const attentionBox =
+        document.getElementById("attention");
+
+    if (attention.length === 0) {
+
+        attentionBox.innerHTML =
+            "<p>No major sales alerts detected.</p>";
+
+    } else {
+
+        attentionBox.innerHTML =
+            attention.map(item => {
+
+                const change =
+                    Number(item.change_percent).toFixed(1);
+
+                return `
+                    <div class="alert">
+                        <strong>${item.product_name}</strong>
+
+                        <span>
+                            ${item.previous_sales} → ${item.recent_sales} units
+                        </span>
+
+                        <span>
+                            ${change > 0 ? "+" : ""}${change}%
+                        </span>
+
+                        <b>${item.alert}</b>
+                    </div>
+                `;
+
+            }).join("");
+    }
+
+
+    /* Sales */
+
+    const salesBox =
+        document.getElementById("sales");
+
+    const topSales =
+        [...sales]
+        .sort((a, b) => b.units_sold - a.units_sold)
+        .slice(0, 5);
+
+    salesBox.innerHTML =
+        topSales.map(item => {
+
+            return `
+                <div class="alert">
+
+                    <strong>
+                        ${item.product_name}
+                    </strong>
+
+                    <span>
+                        ${item.units_sold} units sold
+                    </span>
+
+                    <span>
+                        Revenue: ₹${Number(item.revenue).toLocaleString("en-IN")}
+                    </span>
+
+                    <b>
+                        Top Seller
+                    </b>
+
+                </div>
+            `;
+
+        }).join("");
+
+
+    /* Stockout */
+
+    const stockoutBox =
+        document.getElementById("stockout-table");
+
+    const riskyItems =
+        stockout
+        .filter(
+            item => item.risk_level === "High" ||
+                    item.risk_level === "Critical"
+        )
+        .sort(
+            (a, b) => a.days_of_stock - b.days_of_stock
+        )
+        .slice(0, 10);
+
+
+    if (riskyItems.length === 0) {
+
+        stockoutBox.innerHTML =
+            "<p>No immediate stockout risks detected.</p>";
+
+    } else {
+
+        stockoutBox.innerHTML =
+            riskyItems.map(item => {
+
+                return `
+                    <div class="alert">
+
+                        <strong>
+                            ${item.product_name}
+                        </strong>
+
+                        <span>
+                            ${item.store_name}
+                        </span>
+
+                        <span>
+                            ${Number(item.days_of_stock).toFixed(1)}
+                            days remaining
+                        </span>
+
+                        <b>
+                            ${item.risk_level}
+                        </b>
+
+                    </div>
+                `;
+
+            }).join("");
+    }
+}
+
+
+/* -----------------------------
+   Ask RetailIQ
+----------------------------- */
+
+async function askRetailIQ() {
+
+    const input =
+        document.getElementById("question");
+
+    const answerBox =
+        document.getElementById("answer");
+
+    const question =
+        input.value.trim();
+
+    if (!question) {
+
+        answerBox.innerHTML =
+            "<p>Please enter a question.</p>";
+
+        return;
+    }
+
+
+    answerBox.innerHTML =
+        "<p>RetailIQ is analyzing verified retail data...</p>";
+
+
+    try {
+
+        const response = await fetch(
+            "/api/ask",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    question: question
+                })
+            }
+        );
+
+
+        const result =
+            await response.json();
+
+
+        if (result.status === "unsupported") {
+
+            answerBox.innerHTML = `
+                <h3>Not enough data</h3>
+                <p>${result.message}</p>
+            `;
+
+            return;
+        }
+
+
+        if (result.status !== "success") {
+
+            throw new Error(
+                result.message || "Unable to get AI response"
+            );
+        }
+
+
+        answerBox.innerHTML = `
+            <h3>RetailIQ Answer</h3>
+
+            <div>
+                ${formatAnswer(result.answer)}
+            </div>
+
+            <h4>Verified Evidence</h4>
+
+            <pre>${escapeHtml(
+                JSON.stringify(result.evidence, null, 2)
+            )}</pre>
+        `;
+
+
+    } catch (error) {
+
+        answerBox.innerHTML = `
+            <h3>Unable to answer</h3>
+            <p>${escapeHtml(error.message)}</p>
+        `;
+
+        console.error(error);
+    }
+}
+
+
+/* -----------------------------
+   Format AI Answer
+----------------------------- */
+
+function formatAnswer(text) {
+
+    let formatted =
+        escapeHtml(text);
+
+    formatted =
+        formatted.replace(
+            /\*\*(.*?)\*\*/g,
+            "<strong>$1</strong>"
+        );
+
+    formatted =
+        formatted.replace(
+            /^### (.*)$/gm,
+            "<h3>$1</h3>"
+        );
+
+    formatted =
+        formatted.replace(
+            /^## (.*)$/gm,
+            "<h3>$1</h3>"
+        );
+
+    formatted =
+        formatted.replace(
+            /^- (.*)$/gm,
+            "• $1<br>"
+        );
+
+    formatted =
+        formatted.replace(
+            /\n/g,
+            "<br>"
+        );
+
+    return formatted;
+}
+
+
+/* -----------------------------
+   Escape HTML
+----------------------------- */
+
+function escapeHtml(value) {
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+/* -----------------------------
+   Enter Key Support
+----------------------------- */
+
+document
+    .getElementById("question")
+    .addEventListener(
+        "keydown",
+        function(event) {
+
+            if (event.key === "Enter") {
+                askRetailIQ();
+            }
+
+        }
+    );
+
+
+/* Load dashboard */
+
+loadDashboard();
+
+</script>
+
+</body>
+</html>

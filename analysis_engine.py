@@ -227,6 +227,29 @@ class RetailAnalyzer:
             })
 
         return pd.DataFrame(recommendations)
+    def get_slow_moving(self):
+        """Identify products with consistently low sales velocity."""
+        sales = self.sales.copy()
+
+        product_sales = (
+            sales.groupby(["product_id", "product_name"])["units_sold"]
+            .sum()
+            .reset_index()
+        )
+
+        product_sales["daily_avg_sales"] = (
+            product_sales["units_sold"] / sales["date"].nunique()
+        )
+
+        slow = product_sales[
+            product_sales["daily_avg_sales"] <= 1.0
+        ].copy()
+
+        slow["status"] = "Slow Moving"
+
+        return slow.sort_values(
+            "daily_avg_sales"
+        ).reset_index(drop=True)
 
     def get_attention_items(self):
         trends = self.get_sales_trends()
@@ -266,3 +289,4 @@ if __name__ == "__main__":
     print(analyzer.get_stockout_risk().to_string(index=False))
     print("\nRECOMMENDATIONS")
     print(analyzer.get_recommendations().to_string(index=False))
+    
