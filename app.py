@@ -174,7 +174,10 @@ def dashboard():
             ),
             "recommendations": to_json_records(
                 analyzer.get_recommendations()
-            )
+            ),
+            "slow_moving": to_json_records(
+                analyzer.get_slow_moving()
+)
         }
 
         return jsonify({
