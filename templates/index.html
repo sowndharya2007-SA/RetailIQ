@@ -16,6 +16,7 @@
 <header>
     <h1>RetailIQ</h1>
     <p>AI Sales & Inventory Copilot</p>
+    <div id="live-status">🟢 Live Monitoring • Updating every 30 seconds</div>
 </header>
 
 <main class="container">
@@ -168,6 +169,14 @@ let dashboardData = null;
 ----------------------------- */
 
 async function loadDashboard() {
+
+const liveStatus = document.getElementById("live-status");
+
+if (liveStatus) {
+    liveStatus.textContent =
+        "🟢 Live Monitoring • Updated " +
+        new Date().toLocaleTimeString();
+}
 
     try {
 
@@ -626,6 +635,7 @@ document
 
 
 /* Load dashboard */
+setInterval(loadDashboard, 30000);
 
 loadDashboard();
 

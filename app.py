@@ -26,6 +26,8 @@ def to_json_records(data):
 
     return data
 def build_evidence(question):
+    global analyzer
+    analyzer = RetailAnalyzer()
     question_lower = question.lower()
     """
     Select the deterministic analysis most relevant to the
@@ -167,6 +169,8 @@ def health():
 
 @app.route("/api/dashboard")
 def dashboard():
+    global analyzer
+    analyzer = RetailAnalyzer()
     """Return verified retail metrics for the dashboard."""
     try:
         result = {
@@ -245,9 +249,15 @@ def ask():
                 question,
                 data_context
             )
-        except Exception as exc:
-            print("Gemini error:", exc)
-            answer = ""
+        except Exception as error:
+            print("Gemini error:", error)
+
+            return jsonify({
+                "status": "error",
+                "question": question,
+                "analysis_type": evidence["analysis_type"],
+                "message": "The AI service is temporarily unavailable. The verified retail data is still available."
+            }), 503
 
 
         

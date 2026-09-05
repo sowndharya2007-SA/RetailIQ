@@ -211,3 +211,8 @@ pre {
         grid-template-columns: 1fr;
     }
 }
+#live-status {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #86efac;
+}
