@@ -284,7 +284,43 @@ class RetailAnalyzer:
         return trends[
             trends["alert"] != ""
         ]
+    def get_monthly_performance(self):
+        """Calculate monthly sales performance."""
 
+        sales = self.sales.copy()
+
+        # Add product pricing so revenue can be calculated
+        sales = sales.merge(
+            self.products[["product_id", "unit_price"]],
+            on="product_id",
+            how="left"
+        )
+
+        # Calculate revenue
+        sales["revenue"] = (
+            sales["units_sold"] * sales["unit_price"]
+        )
+
+        # Create month column
+        sales["month"] = (
+            sales["date"]
+            .dt.to_period("M")
+            .astype(str)
+        )
+
+        # Aggregate monthly performance
+        monthly = (
+            sales.groupby("month")
+            .agg(
+                units_sold=("units_sold", "sum"),
+                revenue=("revenue", "sum")
+            )
+            .reset_index()
+        )
+
+        monthly["revenue"] = monthly["revenue"].round(2)
+
+        return monthly.sort_values("month").reset_index(drop=True)
 
 if __name__ == "__main__":
     analyzer = RetailAnalyzer()
