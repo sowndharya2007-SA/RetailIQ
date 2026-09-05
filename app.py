@@ -114,13 +114,15 @@ def build_evidence(question):
     }
 
     if any(word in q for word in [
-        "recommend",
-        "recommendation",
-        "what should i do",
-        "what should we do",
-        "what action",
-        "action should"
-    ]):
+    "recommend",
+    "recommendation",
+    "reorder",
+    "reorder now",
+    "what should i do",
+    "what should we do",
+    "what action",
+    "action should"
+]):
         return {
             "analysis_type": "recommendations",
             "data": to_json_records(
@@ -251,13 +253,7 @@ def ask():
             )
         except Exception as error:
             print("Gemini error:", error)
-
-            return jsonify({
-                "status": "error",
-                "question": question,
-                "analysis_type": evidence["analysis_type"],
-                "message": "The AI service is temporarily unavailable. The verified retail data is still available."
-            }), 503
+            answer = "AI service unavailable. Showing verified retail analysis instead."
 
 
         
