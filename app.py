@@ -240,26 +240,50 @@ def ask():
             indent=2,
             default=str
         )
-
-        answer = gemini.ask(
-            question,
-            data_context
-        )
-        if not answer or len(answer.strip()) < 60:
-            if evidence["analysis_type"] == "slow_moving":
-                if evidence["data"]:
-                    item = evidence["data"][0]
-
-            answer = (
-                f"{item['product_name']} is the only slow-moving product. "
-                f"It sold {item['units_sold']} units, averaging "
-                f"{item['daily_avg_sales']:.2f} units per day. "
-                f"It is classified as slow-moving because its sales velocity "
-                f"is below the 2.5 units/day threshold. "
-                f"Recommendation: monitor demand and avoid unnecessary "
-                f"replenishment until sales improve."
+        try:
+            answer = gemini.ask(
+                question,
+                data_context
             )
+        except Exception as exc:
+            print("Gemini error:", exc)
+            answer = ""
 
+
+        
+        if evidence["analysis_type"] == "slow_moving":
+            if evidence["data"]:
+                item = evidence["data"][0]
+
+                answer = (
+                    f"{item['product_name']} is the only slow-moving product. "
+                    f"It sold {item['units_sold']} units, averaging "
+                    f"{item['daily_avg_sales']:.2f} units per day. "
+                    f"It is classified as slow-moving because its sales velocity "
+                    f"is below the 2.5 units/day threshold. "
+                    f"Recommendation: monitor demand and avoid unnecessary "
+                    f"replenishment until sales improve."
+                )
+
+        elif evidence["analysis_type"] == "stockout_risk":
+            items = evidence["data"][:5]
+
+            if items:
+                answer = "The following products are at risk of running out: "
+
+                answer += "; ".join(
+                    f"{item['product_name']} at {item['store_name']} has "
+                    f"{item['current_stock']} units remaining, "
+                    f"with approximately {item['days_of_stock']:.1f} days "
+                    f"of stock left. Risk level: {item['risk_level']}. "
+                    f"Recommended reorder: {item['recommended_reorder']} units."
+                    for item in items
+                )
+
+                answer += (
+                    " Recommendation: prioritize replenishment "
+                    "for the highest-risk items."
+                )
         return jsonify({
             "status": "success",
             "question": question,
