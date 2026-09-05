@@ -42,8 +42,16 @@ MANAGER QUESTION:
 
 VERIFIED RETAIL DATA:
 {data_context}
+Write a direct manager-friendly answer in 2-4 sentences.
 
-Give a concise, manager-friendly answer.
+Use the verified data to:
+- directly answer the question
+- mention the important numbers
+- explain why the item is flagged
+- give one practical recommendation when appropriate
+
+Do not ask for more data if the provided data already answers the question.
+Do not invent numbers or facts.
 """
 
         response = self.client.models.generate_content(

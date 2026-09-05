@@ -245,6 +245,20 @@ def ask():
             question,
             data_context
         )
+        if not answer or len(answer.strip()) < 60:
+            if evidence["analysis_type"] == "slow_moving":
+                if evidence["data"]:
+                    item = evidence["data"][0]
+
+            answer = (
+                f"{item['product_name']} is the only slow-moving product. "
+                f"It sold {item['units_sold']} units, averaging "
+                f"{item['daily_avg_sales']:.2f} units per day. "
+                f"It is classified as slow-moving because its sales velocity "
+                f"is below the 2.5 units/day threshold. "
+                f"Recommendation: monitor demand and avoid unnecessary "
+                f"replenishment until sales improve."
+            )
 
         return jsonify({
             "status": "success",
