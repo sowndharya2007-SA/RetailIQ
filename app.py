@@ -103,6 +103,13 @@ def build_evidence(question):
                 analyzer.get_sales_trends()
             )
         }
+    if "slow" in q or "slow-moving" in q or "slow moving" in q:
+        return {
+        "analysis_type": "slow_moving",
+        "data": to_json_records(
+            analyzer.get_slow_moving()
+        )
+    }
 
     if any(word in q for word in [
         "recommend",
