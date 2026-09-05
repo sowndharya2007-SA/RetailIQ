@@ -64,8 +64,6 @@
         </div>
 
     </section>
-
-
     <!-- AI COPILOT -->
     <section class="section">
 
@@ -131,6 +129,13 @@
         </div>
 
     </section>
+    <section class="section">
+        <div class="card">
+            <h2>🐢 Slow-Moving Stock</h2>
+                <p>Products with consistently low sales velocity.</p>
+            <div id="slow-moving">Loading slow-moving products...</div>
+        </div>
+</section>
 
 </main>
 
@@ -184,6 +189,7 @@ function renderDashboard() {
     const stockout = data.stockout_risk || [];
     const attention = data.attention_items || [];
     const sales = data.sales_summary || [];
+    const slowMoving = data.slow_moving || [];
 
 
     /* KPI */
@@ -336,7 +342,24 @@ function renderDashboard() {
 
             }).join("");
     }
-}
+    const slowMovingBox = document.getElementById("slow-moving");
+
+    if (slowMoving.length === 0) {
+        slowMovingBox.innerHTML =
+            "<p>No slow-moving products detected.</p>";
+    } else {
+        slowMovingBox.innerHTML = slowMoving.map(item => {
+                return `
+                    <div class="alert">
+                        <strong>${item.product_name}</strong>
+                        <span>${item.category}</span>
+                        <span>${Number(item.daily_avg_sales).toFixed(2)} units/day</span>
+                        <b>Slow Moving</b>
+                     </div>
+                `;
+            }).join("");
+        }
+    }
 
 
 /* -----------------------------
