@@ -150,7 +150,8 @@
     <div class="card">
         <h2>💡 Recommended Actions</h2>
         <p>Data-driven actions based on current inventory and sales velocity.</p>
-        <div id="recommendations">Loading recommendations...</div>
+        <div id="recommendations">
+            Loading recommendations...</div>
     </div>
 </section>
 
@@ -207,28 +208,31 @@ function renderDashboard() {
     const attention = data.attention_items || [];
     const sales = data.sales_summary || [];
     const slowMoving = data.slow_moving || [];
-   const recommendations = Array.isArray(data.recommendations)
+    const recommendations = Array.isArray(data.recommendations)
         ? data.recommendations
         : [];
+
     const recommendationsBox =
         document.getElementById("recommendations");
-if (recommendations.length === 0) {
-    recommendationsBox.innerHTML =
-        "<p>No immediate recommendations available.</p>";
-} else {
-    recommendationsBox.innerHTML = recommendations
-        .slice(0, 10)
-        .map(item => {
-            return `
-                <div class="alert">
-                    <strong>${item.product_name || "Product"}</strong>
-                    <span>${item.store_name || "Store"}</span>
-                    <span>
-                        ${item.recommended_reorder !== undefined
-                            ? `Reorder: ${item.recommended_reorder} units`
-                            : "Inventory review required"}
-                    </span>
-                    <b>${item.recommendation || "Review"}</b>
+
+    if (recommendations.length === 0) {
+        recommendationsBox.innerHTML =
+            "<p>No recommended actions available.</p>";
+    } else {
+        recommendationsBox.innerHTML = recommendations
+            .slice(0, 10)
+            .map(item => {
+                return `
+                     <div class="alert">
+                        <strong>${item.product}</strong>
+
+                        <span>${item.store}</span>
+
+                        <span>
+                        Reorder: ${item.recommended_order} units
+                        </span>
+
+                    <b>${item.priority}</b>
                 </div>
             `;
         })
