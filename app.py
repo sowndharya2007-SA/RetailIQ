@@ -290,6 +290,45 @@ def ask():
                     " Recommendation: prioritize replenishment "
                     "for the highest-risk items."
                 )
+        elif evidence["analysis_type"] == "sales_trends":
+            items = evidence["data"][:5]
+
+            if items:
+                answer = "The biggest sales changes are: "
+
+                answer += "; ".join(
+                    f"{item['product_name']} changed from "
+                    f"{item['previous_sales']} to {item['recent_sales']} units, "
+                    f"a {item['change_percent']:.1f}% change."
+                    for item in items
+                )
+
+                answer += (
+                    " Recommendation: investigate major spikes for "
+                    "possible replenishment needs and review major drops "
+                    "for changes in demand."
+                )
+        elif evidence["analysis_type"] == "recommendations":
+            items = evidence["data"][:5]
+
+            if items:
+                answer = "Recommended actions based on current inventory: "
+
+                answer += "; ".join(
+                    f"{item['product']} at {item['store']} should be "
+                    f"reordered by {item['recommended_order']} units. "
+                    f"Current stock is {item['current_stock']} units, "
+                    f"with approximately {item['days_remaining']:.1f} days "
+                    f"remaining. Priority: {item['priority']}."
+                    for item in items
+                )
+
+                answer += (
+                    " These recommendations are based on recent sales "
+                    "velocity and current stock levels and should be "
+                    "reviewed by the store manager before action."
+                )
+
         return jsonify({
             "status": "success",
             "question": question,
