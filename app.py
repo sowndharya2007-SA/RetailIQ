@@ -26,6 +26,7 @@ def to_json_records(data):
 
     return data
 def build_evidence(question):
+    question_lower = question.lower()
     """
     Select the deterministic analysis most relevant to the
     manager's question.
@@ -72,6 +73,17 @@ def build_evidence(question):
             "analysis_type": "low_stock",
             "data": to_json_records(
                 analyzer.get_low_stock()
+            )
+        }
+    if any(word in question_lower for word in [
+        "monthly",
+        "month",
+        "monthly performance"
+    ]):
+        return {
+            "analysis_type": "monthly_performance",
+            "data": to_json_records(
+                analyzer.get_monthly_performance()
             )
         }
 
@@ -177,7 +189,11 @@ def dashboard():
             ),
             "slow_moving": to_json_records(
                 analyzer.get_slow_moving()
-)
+            ),
+            "monthly_performance": to_json_records(
+                analyzer.get_monthly_performance()
+            )
+
         }
 
         return jsonify({
