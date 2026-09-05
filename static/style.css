@@ -32,17 +32,18 @@ header p {
 /* Main container */
 
 .container {
+    width: 100%;
     max-width: 1200px;
     margin: 32px auto;
     padding: 0 24px;
 }
-
 /* Metric cards */
 
 .card-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 18px;
+    width: 100%;
 }
 
 .card {
@@ -154,11 +155,14 @@ header p {
 /* AI answer */
 
 #answer {
+    width: 100%;
+    max-width: 100%;
     background: #f8fafc;
     border: 1px solid #e2e8f0;
     border-radius: 10px;
     padding: 18px;
     line-height: 1.6;
+    overflow-wrap: anywhere;
 }
 
 #answer h3 {
@@ -170,16 +174,17 @@ header p {
 }
 
 /* Evidence */
-
 pre {
     background: #111827;
     color: #e5e7eb;
     padding: 16px;
     border-radius: 9px;
-    overflow-x: auto;
+    overflow: auto;
+    max-width: 100%;
     font-size: 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
-
 /* Responsive */
 
 @media (max-width: 900px) {
@@ -215,4 +220,13 @@ pre {
     margin-top: 8px;
     font-size: 13px;
     color: #86efac;
+}
+.ai-note {
+    margin: 8px 0 16px;
+    padding: 10px 14px;
+    background: #f1f5f9;
+    border-left: 4px solid #2563eb;
+    border-radius: 6px;
+    color: #475569;
+    font-size: 13px;
 }
