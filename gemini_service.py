@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from google import genai
+from google.genai import types
 
 load_dotenv()
 
@@ -14,7 +15,10 @@ class GeminiService:
                 "GEMINI_API_KEY is not configured."
             )
 
-        self.client = genai.Client(api_key=api_key)
+        self.client = genai.Client(
+    api_key=api_key,
+    http_options=types.HttpOptions(timeout=30000)
+)
         self.model = "gemini-3.6-flash"
 
     def ask(self, question, data_context):
@@ -43,9 +47,13 @@ Give a concise, manager-friendly answer.
 """
 
         response = self.client.models.generate_content(
-            model=self.model,
-            contents=prompt
-        )
+    model=self.model,
+    contents=prompt,
+    config=types.GenerateContentConfig(
+        temperature=0.2,
+        max_output_tokens=300
+    )
+)
 
         return response.text
 
