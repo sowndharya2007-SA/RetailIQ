@@ -113,6 +113,15 @@
         </div>
 
     </section>
+    <section class="section">
+    <div class="card">
+        <h2>📊 Monthly Performance</h2>
+        <p>Monthly sales and revenue generated from verified retail data.</p>
+        <div id="monthly-performance">
+            Loading monthly performance...
+        </div>
+    </div>
+</section>
 
 
     <!-- STOCKOUT TABLE -->
@@ -135,6 +144,14 @@
                 <p>Products with consistently low sales velocity.</p>
             <div id="slow-moving">Loading slow-moving products...</div>
         </div>
+</section>
+
+    <section class="section">
+    <div class="card">
+        <h2>💡 Recommended Actions</h2>
+        <p>Data-driven actions based on current inventory and sales velocity.</p>
+        <div id="recommendations">Loading recommendations...</div>
+    </div>
 </section>
 
 </main>
@@ -190,6 +207,70 @@ function renderDashboard() {
     const attention = data.attention_items || [];
     const sales = data.sales_summary || [];
     const slowMoving = data.slow_moving || [];
+    const recommendationsBox = document.getElementById("recommendations");
+
+if (recommendations.length === 0) {
+    recommendationsBox.innerHTML =
+        "<p>No immediate recommendations available.</p>";
+} else {
+    recommendationsBox.innerHTML = recommendations
+        .slice(0, 10)
+        .map(item => {
+            return `
+                <div class="alert">
+                    <strong>${item.product_name}</strong>
+                    <span>${item.store_name}</span>
+                    <span>${item.days_of_stock.toFixed(1)} days of stock</span>
+                    <b>${item.recommendation}</b>
+                </div>
+            `;
+        })
+        .join("");
+}
+    const monthlyPerformance =
+        data.monthly_performance || [];
+    const recommendations = data.recommendations || [];
+    /* Monthly Performance */
+
+const monthlyBox =
+    document.getElementById("monthly-performance");
+
+if (monthlyPerformance.length === 0) {
+
+    monthlyBox.innerHTML =
+        "<p>No monthly performance data available.</p>";
+
+} else {
+
+    monthlyBox.innerHTML =
+        monthlyPerformance.map(item => {
+
+            return `
+                <div class="alert">
+
+                    <strong>
+                        ${item.month}
+                    </strong>
+
+                    <span>
+                        ${Number(item.units_sold).toLocaleString("en-IN")}
+                        units sold
+                    </span>
+
+                    <span>
+                        Revenue:
+                        ₹${Number(item.revenue).toLocaleString("en-IN")}
+                    </span>
+
+                    <b>
+                        Monthly
+                    </b>
+
+                </div>
+            `;
+
+        }).join("");
+}
 
 
     /* KPI */
