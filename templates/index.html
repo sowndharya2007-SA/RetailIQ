@@ -207,8 +207,11 @@ function renderDashboard() {
     const attention = data.attention_items || [];
     const sales = data.sales_summary || [];
     const slowMoving = data.slow_moving || [];
-    const recommendationsBox = document.getElementById("recommendations");
-
+   const recommendations = Array.isArray(data.recommendations)
+        ? data.recommendations
+        : [];
+    const recommendationsBox =
+        document.getElementById("recommendations");
 if (recommendations.length === 0) {
     recommendationsBox.innerHTML =
         "<p>No immediate recommendations available.</p>";
@@ -218,10 +221,14 @@ if (recommendations.length === 0) {
         .map(item => {
             return `
                 <div class="alert">
-                    <strong>${item.product_name}</strong>
-                    <span>${item.store_name}</span>
-                    <span>${item.days_of_stock.toFixed(1)} days of stock</span>
-                    <b>${item.recommendation}</b>
+                    <strong>${item.product_name || "Product"}</strong>
+                    <span>${item.store_name || "Store"}</span>
+                    <span>
+                        ${item.recommended_reorder !== undefined
+                            ? `Reorder: ${item.recommended_reorder} units`
+                            : "Inventory review required"}
+                    </span>
+                    <b>${item.recommendation || "Review"}</b>
                 </div>
             `;
         })
@@ -229,7 +236,6 @@ if (recommendations.length === 0) {
 }
     const monthlyPerformance =
         data.monthly_performance || [];
-    const recommendations = data.recommendations || [];
     /* Monthly Performance */
 
 const monthlyBox =
